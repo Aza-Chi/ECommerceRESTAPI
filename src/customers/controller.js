@@ -10,11 +10,11 @@ const getCustomers = (req, res) => {
     });
 };
 
-const addCustomer = (req, res) => {
+const addCustomer = async (req, res) => {
     // Use JS Destructuring !
-        const { username, password_hash, first_name, last_name, email, phone_number } = req.body;
+        const { username, password_hash, first_name, last_name, email, phone_number } = await req.body;
     // Check if something already exists! email  etc 
-        pool.query(queries.checkEmailExists, [email], (error, results) => {
+         pool.query(queries.checkEmailExists, [email], (error, results) => {
             console.log("Now checking if email exists");
             if (results.rows.length) { 
                 console.log("Console: This email address is already being used");
@@ -22,12 +22,12 @@ const addCustomer = (req, res) => {
             } else if (results.rows.length===0) { // length 0, falsy so we can add the customer/email!
                 pool.query(queries.addCustomer, [username, password_hash, first_name, last_name, email, phone_number], (error, results) => {
                     if (error) throw error;
-                    res.send(201).send("Customer Added Successfully!"); //201 - Created Successfully
+                    res.status(201).send("Customer Added Successfully!"); //201 - Created Successfully
                     console.log("Added the Customer!");
                     
                 });
             } else {    // End of  Adding Customer
-                 res.send(500).send("How did you end up here?");
+                 res.status(500).send("How did you end up here?");
                  
             }; 
 

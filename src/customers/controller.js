@@ -12,27 +12,25 @@ const getCustomers = (req, res) => {
 
 const addCustomer = async (req, res) => {
     // Use JS Destructuring !
-        const { username, password_hash, first_name, last_name, email, phone_number } = await req.body;
-    // Check if something already exists! email  etc 
-         pool.query(queries.checkEmailExists, [email], (error, results) => {
-            console.log("Now checking if email exists");
-            if (results.rows.length) { 
-                console.log("Console: This email address is already being used");
-                return res.send("This email address is already being used.");
-            } else if (results.rows.length===0) { // length 0, falsy so we can add the customer/email!
-                pool.query(queries.addCustomer, [username, password_hash, first_name, last_name, email, phone_number], (error, results) => {
-                    if (error) throw error;
-                    res.status(201).send("Customer Added Successfully!"); //201 - Created Successfully
-                    console.log("Added the Customer!");
-                    
-                });
-            } else {    // End of  Adding Customer
-                 res.status(500).send("How did you end up here?");
-                 
-            }; 
-
+    const { username, password_hash, first_name, last_name, email, phone_number, } = await req.body;
+    // Check if email exists !
+    pool.query(queries.checkEmailExists, [email], (error, results) => {
+      console.log("Checking if email is in use!");
+      if (results.rows.length > 0) {
+        console.log("This email address is already in use.");
+        return res.send("This email address is already in use.");
+      } else if (results.rows.length === 0) {
+        // length 0, falsy so we can add the customer/email!
+        pool.query(queries.addCustomer, [username, password_hash, first_name, last_name, email, phone_number]
+        ).then(() => {
+              res.send("Customer Added Successfully!");
+            console.log("Added the Customer!");
+        }).catch(() => {
+              res.send("Error!");
         });
-};
+      }
+    });
+  };
 
 const getCustomerById = (req, res) => {
     const id = parseInt(req.params.id);

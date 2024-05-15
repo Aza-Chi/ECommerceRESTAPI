@@ -1,5 +1,3 @@
-// Need to fix 'ERR_HTTP_HEADERS_SENT'
-
 const pool = require('../../db');
 const queries = require('./queries');
 

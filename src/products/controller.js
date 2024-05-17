@@ -4,7 +4,7 @@ const queries = require('./queries');
 const getProducts = (req, res) => {
   pool.query(queries.getProducts, (error, results) => {
       if(error) {
-          console.error('Error fetching products:', error);
+          console.error('Error fetching productss:', error);
           res.status(500).json({ error: 'Internal Server Error' });
       } else {
           res.status(200).json(results.rows);
@@ -44,64 +44,25 @@ const addProduct = async (req, res) => {
     }
 };
 
-
-
-
-const updateProductColumn = async (req, res) => {
+const updateProductColumn = (req, res) => {
   const id = parseInt(req.params.product_id);
-  const { product_name, stock_quantity, product_description, price, category_id, image_url } = req.body;
+  const { product_name, stock_quantity } = req.body;
 
-  try {
-    // Check if the product exists before attempting to update
-    const result = await pool.query(queries.getProductById, [id]);
+  let column;
+  let value;
 
-    // If no product is found with the given ID, return a 404 response
-    if (result.rows.length === 0) {
-      return res.status(404).send("Product does not exist in database!");
-    }
-
-    // Update the product columns based on the request body
-    const updates = [
-      { column: 'product_name', value: product_name },
-      { column: 'stock_quantity', value: stock_quantity },
-      { column: 'product_description', value: product_description },
-      { column: 'price', value: price },
-      { column: 'category_id', value: category_id },
-      { column: 'image_url', value: image_url },
-    ];
-
-    for (const update of updates) {
-      if (update.value !== undefined) {
-        const updateQuery = queries.generateUpdateQuery(update.column); // Generate update query for the column
-        await updateColumn(updateQuery, update.value, id); // Update the column
-      }
-    }
-
-    res.status(200).send("Columns updated successfully");
-  } catch (error) {
-    console.error("Error updating columns:", error);
-    res.status(500).send("Error updating columns.");
+  // Determine the column and value based on the request body
+  if (product_name !== undefined) {
+    column = 'product_name';
+    value = product_name;
+  } else if (stock_quantity !== undefined) {
+    column = 'stock_quantity';
+    value = stock_quantity;
+  } else {
+    return res.status(400).send("No valid column specified for update.");
   }
-};
 
-// Function to update a specific column
-const updateColumn = async (updateQuery, value, id) => { // Pass the generated query as a parameter
-  try {
-    await pool.query(updateQuery, [value, id]);
-    console.log(`Column updated successfully`);
-  } catch (error) {
-    console.error(`Error updating column:`, error);
-    throw error;
-  }
-};
-
-
-// REMOVE PRODUCT 
-const removeProduct = (req, res) => {
-  //id comes in as a string so we need to parse for int
-  const id = parseInt(req.params.product_id);
-  
-  // Check if the product exists before attempting removal
+  // Check if the product exists before attempting to update
   pool.query(queries.getProductById, [id], (error, results) => {
       if (error) {
           console.error('Error checking if product exists:', error);
@@ -113,13 +74,14 @@ const removeProduct = (req, res) => {
           return res.status(404).send("Product does not exist in database!");
       }
 
-      // Remove the product
-      pool.query(queries.removeProduct, [id], (error, results) => {
+      // Update the specified column and updatedAt timestamp
+      const updateQuery = `UPDATE products SET ${column} = $1, updated_at = NOW() WHERE product_id = $2`;
+      pool.query(updateQuery, [value, id], (error, results) => {
           if (error) {
-              console.error('Error removing product:', error);
-              return res.status(500).send("Error removing product.");
+              console.error(`Error updating ${column}:`, error);
+              return res.status(500).send(`Error updating ${column}.`);
           }
-          res.status(200).send("Product Successfully Removed");
+          res.status(200).send(`${column} updated successfully`);
       });
   });
 };
@@ -130,5 +92,4 @@ module.exports = {
     getProductById,
     addProduct,
     updateProductColumn,
-    removeProduct,
 };

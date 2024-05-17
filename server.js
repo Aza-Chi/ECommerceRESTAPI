@@ -1,9 +1,6 @@
 const express = require('express');
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
-const orderRoutes = require("./src/orders/routes");
-
-const { check } = require('express-validator');
 const app = express();
 const port = 3000;
 
@@ -15,6 +12,5 @@ app.get("/", (req, res) => {
 
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/products', productRoutes);
-app.use('/api/v1/orders', orderRoutes);
 
 app.listen(port, () => console.log(`I'm alive AHAHAHAHA! App listening on port ${port}`));

@@ -82,35 +82,57 @@ const removeCustomer = (req, res) => {
 };
 
 
-const updateCustomerFirstName = (req, res) => {
-  const id = parseInt(req.params.id);
-  const { first_name } = req.body;
+
+const updateCustomerColumn = async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { username, password_hash, first_name, last_name, email, phone_number } = req.body;
   
-  // Check if the customer exists before attempting to update
-  pool.query(queries.getCustomerById, [id], (error, results) => {
-      if (error) {
-          console.error('Error checking if customer exists:', error);
-          return res.status(500).send("Error checking if customer exists.");
-      }
-
+    try {
+      // Check if the customer exists before attempting to update
+      const result = await pool.query(queries.getCustomerById, [id]);
+  
       // If no customer is found with the given ID, return a 404 response
-      if (results.rows.length === 0) {
-          return res.status(404).send("Customer does not exist in database!");
+      if (result.rows.length === 0) {
+        return res.status(404).send("Customer does not exist in database!");
       }
+  
+      // Update the customer columns based on the request body
+      const updates = [
+        { column: 'username', value: username },
+        { column: 'password_hash', value: password_hash },
+        { column: 'first_name', value: first_name },
+        { column: 'last_name', value: last_name },
+        { column: 'email', value: email },
+        { column: 'phone_number', value: phone_number },
+      ];
+  
+      for (const update of updates) {
+        if (update.value !== undefined) {
+          const updateQuery = queries.generateCustomerUpdateQuery(update.column); // Generate update query for the column
+          await updateColumn(updateQuery, update.value, id); // Update the column
+        }
+      }
+  
+      res.status(200).send("Columns updated successfully");
+    } catch (error) {
+      console.error("Error updating columns:", error);
+      res.status(500).send("Error updating columns.");
+    }
+  };
+  
+  // Function to update a specific column
+  const updateColumn = async (updateQuery, value, id) => { // Pass the generated query as a parameter
+    try {
+      await pool.query(updateQuery, [value, id]);
+      console.log(`Column updated successfully`);
+    } catch (error) {
+      console.error(`Error updating column:`, error);
+      throw error;
+    }
+  };
 
-      // Update the customer's first name and updatedAt timestamp
-      pool.query(queries.updateCustomerFirstName, [first_name, id], (error, results) => {
-          if (error) {
-              console.error('Error updating customer first name:', error);
-              return res.status(500).send("Error updating customer first name.");
-          }
-          res.status(200).send("Customer updated successfully");
-      });
-  });
-};
 
 
-// Update lastname,username, email, phonenumber
 
 
 module.exports = {
@@ -118,5 +140,5 @@ module.exports = {
     getCustomerById,
     addCustomer,
     removeCustomer,
-    updateCustomerFirstName,
+    updateCustomerColumn,
 };

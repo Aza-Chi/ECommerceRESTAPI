@@ -23,18 +23,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply CSRF protection to all routes
-app.use(csrfProtection);
+// app.use(csrfProtection); // TURN THIS BACK ON AFTER TESTING !!!!!!!
 
 // Set up a route to get the CSRF token
 app.get('/get-csrf-token', (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
+// Function to fetch CSRF token
+const fetchCSRFToken = async () => {
+    const response = await fetch('/get-csrf-token');
+    const data = await response.json();
+    return data.csrfToken;
+};
+
 // Example route with CSRF protected form
-app.get("/form", (req, res) => {
+app.get("/form", async (req, res) => {
+    const csrfToken = await fetchCSRFToken();
     res.send(`
         <form action="/process" method="POST">
-            <input type="hidden" name="_csrf" value="${req.csrfToken()}">
+            <input type="hidden" name="_csrf" value="${csrfToken}">
             <button type="submit">Submit</button>
         </form>
     `);
@@ -60,6 +68,7 @@ app.use('/api/v1/addresses', addressesRoutes);
 // Basic error handling middleware
 app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
+        console.log("Invalid CSRF Token!!! LINE63");
         res.status(403).send('Invalid CSRF token');
     } else {
         res.status(500).send('Internal Server Error');
@@ -68,9 +77,3 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(port, () => console.log(`I'm alive AHAHAHAHA! App listening on port ${port}`));
-
-
-/* Notes:
-    nodemon restarts server anytime there are changes made int oa backend file
-
-*/

@@ -1,4 +1,5 @@
 const express = require('express');
+const { check } = require('express-validator');
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
 const app = express();

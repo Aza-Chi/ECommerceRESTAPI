@@ -54,8 +54,8 @@ app.post("/process", (req, res) => {
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
-app.use('/api/v1/orders', shoppingCartRoutes);
-app.use('/api/v1/orders', addressesRoutes);
+app.use('/api/v1/shoppingcart', shoppingCartRoutes);
+app.use('/api/v1/addresses', addressesRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {

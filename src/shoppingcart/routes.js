@@ -4,7 +4,8 @@ const router = Router();
 const controller = require('./controller');
 
 router.get('/', controller.getCarts);
-router.get('/customer/:customer_id', controller.getCartByCustomerId); // need to test!! 
+router.get('/customer/:customer_id', controller.getCartByCustomerId); //http://localhost:3000/api/v1/shoppingcart/customer/1
+
 
 router.delete('/:cart_id', controller.removeCart);
 

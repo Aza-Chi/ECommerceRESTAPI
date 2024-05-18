@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
 const orderRoutes = require("./src/orders/routes");
+const shoppingCartRoutes = require("./src/shoppingcart/routes");
 
 const app = express();
 const port = 3000;
@@ -53,6 +54,7 @@ app.post("/process", (req, res) => {
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/orders', shoppingCartRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {

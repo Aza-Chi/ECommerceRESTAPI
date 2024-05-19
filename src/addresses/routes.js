@@ -17,7 +17,7 @@ router.post('/', [
   check('postcode').exists().isString()
 ], controller.addAddress);
 
-router.delete('/:address_id', controller.removeAddress);
+router.delete('/:address_id', controller.removeAddress); //Remove Address by Address ID not Customer ID!!!
 
 router.put('/:address_id', [
   check('customer_id').optional().isInt(),

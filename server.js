@@ -10,6 +10,15 @@ const addressesRoutes = require("./src/addresses/routes");
 const app = express();
 const port = 3000;
 
+// SUPABASE TEST 
+require("dotenv").config({ path: '.env' });
+/*const { createClient } = require("@supabase/supabase-js");
+const supabaseProjectUrl = 'https://tykrhjjfxhqqgifskhoj.supabase.co'  //const supabaseUrl = process.env.supabase_project_URL;
+const supabaseAPIKey= process.env.supabase_API_Key;
+
+const supabase = createClient(supabaseProjectUrl, supabaseAPIKey); */
+// SUPABASE TEST END
+
 // Use helmet middleware for security
 app.use(helmet());
 
@@ -68,7 +77,7 @@ app.use('/api/v1/addresses', addressesRoutes);
 // Basic error handling middleware
 app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
-        console.log("Invalid CSRF Token!!! LINE63");
+        console.log("Invalid CSRF Token!!!!!!!");
         res.status(403).send('Invalid CSRF token');
     } else {
         res.status(500).send('Internal Server Error');
@@ -77,3 +86,7 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(port, () => console.log(`I'm alive AHAHAHAHA! App listening on port ${port}`));
+
+//module.exports = supabase; //supabase export use for backend routes!
+
+// Note: Use nodemon for automatic server restart on changes.

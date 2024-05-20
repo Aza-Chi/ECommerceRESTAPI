@@ -1,15 +1,18 @@
 const pool = require('../../db');
 const queries = require('./queries');
 
+
+
 const getCarts = (req, res) => {
     console.log("Fetching shopping cart...");
-    pool.query(queries.getCart, (error, results) => {
+    pool.query(queries.getCarts, (error, results) => {
         if (error) {
             console.error('Error fetching shopping cart:', error);
             res.status(500).json({ error: 'Internal Server Error' });
         } else {
-            console.log("Shopping cart fetched successfully.");
-            res.status(200).json(results.rows);
+                console.log("Shopping cart fetched successfully.");
+                res.status(200).json(results.rows);
+            
         }
     });
 };
@@ -40,49 +43,54 @@ const addCart = async (req, res) => {
 };
 
 const removeCart = (req, res) => {
-    const id = parseInt(req.params.cart_id);
-
-    pool.query(queries.getCartById, [id], (error, results) => {
+    const cart_id = parseInt(req.params.cart_id);
+    
+    // Check if the cart entry exists before attempting removal
+    pool.query(queries.checkCartExists, [cart_id], (error, results) => {
         if (error) {
-            console.error('Error checking if shopping cart exists:', error);
-            return res.status(500).send("Error checking if shopping cart exists.");
+            console.error('Error checking if cart entry exists:', error);
+            return res.status(500).send("Error checking if cart entry exists.");
         }
 
+        // If no cart entry is found with the given ID, return a 404 response
         if (results.rows.length === 0) {
-            return res.status(404).send("Shopping cart does not exist in database!");
+            return res.status(404).send("Cart entry does not exist in database!");
         }
 
-        pool.query(queries.removeCart, [id], (error, results) => {
+        // Remove the cart entry
+        pool.query(queries.removeCart, [cart_id], (error, results) => {
             if (error) {
-                console.error('Error removing shopping cart:', error);
-                return res.status(500).send("Error removing shopping cart.");
+                console.error('Error removing cart entry:', error);
+                return res.status(500).send("Error removing cart entry.");
             }
-            res.status(200).send("Shopping cart successfully removed");
+            res.status(200).send("Cart Entry Successfully Removed");
         });
     });
 };
 
-const updateCartColumn = async (req, res) => {
-    const id = parseInt(req.params.cart_id);
+const updateCartColumn = async (req, res) => { //CHANGE TO COALESCE?
     const { customer_id, product_id, quantity } = req.body;
 
     try {
-        const result = await pool.query(queries.getCartById, [id]);
+        // Check if the cart entry exists before attempting to update
+        const result = await pool.query(queries.getCartByCustomerId, [customer_id]);
 
+        // If no cart entry is found with the given IDs, return a 404 response
         if (result.rows.length === 0) {
-            return res.status(404).send("Shopping cart does not exist in database!");
+            return res.status(404).send("Cart entry does not exist in database!");
         }
 
+        // Update the cart entry columns based on the request body
         const updates = [
             { column: 'customer_id', value: customer_id },
             { column: 'product_id', value: product_id },
-            { column: 'quantity', value: quantity },
+            { column: 'quantity', value: quantity }
         ];
 
         for (const update of updates) {
             if (update.value !== undefined) {
-                const updateQuery = queries.generateCartUpdateQuery(update.column);
-                await updateColumn(updateQuery, update.value, id);
+                const updateQuery = queries.generateUpdateQuery(update.column); // Generate update query for the column
+                await updateColumn(updateQuery, update.value, result.rows[0].cart_id); // Update the column (Changed the parameters passed to updateColumn)
             }
         }
 
@@ -93,9 +101,11 @@ const updateCartColumn = async (req, res) => {
     }
 };
 
-const updateColumn = async (updateQuery, value, id) => {
+
+// Function to update a specific column
+const updateColumn = async (updateQuery, value, customer_id) => { // Pass the generated query as a parameter
     try {
-        await pool.query(updateQuery, [value, id]);
+        await pool.query(updateQuery, [value, customer_id]);
         console.log(`Column updated successfully`);
     } catch (error) {
         console.error(`Error updating column:`, error);

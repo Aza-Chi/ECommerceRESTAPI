@@ -9,12 +9,14 @@ router.get('/customer/:customer_id', controller.getCartByCustomerId); //http://l
 
 router.delete('/:cart_id', controller.removeCart);
 
+// Post works
 router.post('/', [
     check('customer_id').exists().isInt(),
     check('product_id').exists().isInt(),
     check('quantity').exists().isInt(),
 ], controller.addCart);
 
+//
 router.put('/:cart_id', [
     check('customer_id').optional().isInt(),
     check('product_id').optional().isInt(),

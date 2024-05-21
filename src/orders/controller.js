@@ -98,7 +98,7 @@ const updateOrderColumn = async (req, res) => {
 
       for (const update of updates) {
         if (update.value !== undefined) {
-          const updateQuery = queries.generateOrderUpdateQuery(update.column); // Generate update query for the column
+          const updateQuery = queries.generateUpdateQuery(update.column); // Generate update query for the column
           await updateColumn(updateQuery, update.value, id); // Update the column
         }
       }

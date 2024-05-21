@@ -15,7 +15,7 @@ router.post('/', [
     check('status_id').exists().isInt(),
   ], controller.addOrder);
 
-router.put('/orders/:order_id', [
+router.put('/:order_id', [
     check('customer_id').optional().isInt(),
     check('total_amount').optional().isNumeric(),
     check('address_id').optional().isInt(),

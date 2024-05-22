@@ -7,6 +7,7 @@ const productRoutes = require("./src/products/routes");
 const orderRoutes = require("./src/orders/routes");
 const shoppingCartRoutes = require("./src/shoppingcart/routes");
 const addressesRoutes = require("./src/addresses/routes");
+const checkoutRoutes = require("./src/checkout/routes");
 const app = express();
 const port = 3000;
 
@@ -73,6 +74,7 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/shoppingcart', shoppingCartRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
+app.use('/api/v1/checkout', checkoutRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {

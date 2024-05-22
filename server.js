@@ -90,3 +90,4 @@ app.listen(port, () => console.log(`I'm alive AHAHAHAHA! App listening on port $
 //module.exports = supabase; //supabase export use for backend routes!
 
 // Note: Use nodemon for automatic server restart on changes.
+// Instead of generating update column functions, use COALESCE?

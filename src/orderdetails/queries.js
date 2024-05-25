@@ -8,6 +8,8 @@ const generateUpdateQuery = (column) => {
     return `UPDATE orderdetails SET ${column} = $1 WHERE order_id = $2`;
   };
 
+  // Shouldn't subtotal be automatic??
+  //Calculate subtotal as quantity*product_id(price) find syntax for that
 
 module.exports = {
     getOrderDetails,   

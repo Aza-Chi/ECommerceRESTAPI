@@ -29,6 +29,24 @@ const getProducts = (req, res) => {
       });
     };
   
+    const getProductPriceById = async (product_id) => {
+      try {
+          const results = await pool.query(queries.getProductPriceById, [product_id]);
+          
+          if (results.rows.length === 0) {
+              throw new Error('Product not found');
+          }
+          
+          const price = results.rows[0].price;
+          console.log(`The product price of product ${product_id} is: ${price}`);
+          return price;
+          
+      } catch (error) {
+          console.error('Error fetching product by ID:', error);
+          throw new Error('Internal Server Error');
+      }
+  };
+
   //Add Order
   
   const addProduct = async (req, res) => {
@@ -132,4 +150,5 @@ module.exports = {
     addProduct,
     updateProductColumn,
     removeProduct,
+    getProductPriceById,
 };

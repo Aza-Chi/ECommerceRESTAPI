@@ -75,8 +75,8 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/shoppingcart', shoppingCartRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
-app.use('/api/v1/checkout', checkoutRoutes);
 app.use('/api/v1/orderdetails', orderDetailsRoutes);
+//app.use('/api/v1/checkout', checkoutRoutes);
 
 
 // Basic error handling middleware

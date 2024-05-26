@@ -1,5 +1,7 @@
 const pool = require('../../db');
 const queries = require('./queries');
+const controllerProducts = require('../products/controller');
+
 
 const getOrderDetails = (req, res) => {
     console.log("Fetching orders...");
@@ -33,17 +35,19 @@ const getOrderDetails = (req, res) => {
 
 const addOrderDetails = async (req, res) => {
     // Use JS Destructuring to extract data from request body
-    const { order_id, product_id, quantity, subtotal } = req.body;
+    const { order_id, product_id, quantity} = req.body; 
     
-
     try {
-        // Add the order details
+      //Self explanatory stuff!
+      const price = await controllerProducts.getProductPriceById(product_id);
+      const subtotal = price * quantity;
+      // Add the order details
         await pool.query(queries.addOrderDetails, [order_id, product_id, quantity, subtotal]);
         console.log("Order details added successfully!");
         return res.status(201).send("Order details added successfully!");
     } catch (error) {
         console.error("Error adding order details:", error);
-        return res.status(500).send("Error adding order details.");
+        return res.status(500).send(`Error adding order details: ${error.message}`);
     }
 };
 

@@ -78,6 +78,8 @@ const removeOrderDetails = (req, res) => {
     });
   };
 
+
+  //After purchase don't really need this, should only be allowed to cancel the order or update the address, so we need 'delete' from orders and 'update' from order details!
   const updateOrderDetails = async (req, res) => {
     const id = parseInt(req.params.order_detail_id);
     const { order_id, product_id, quantity, subtotal } = req.body;

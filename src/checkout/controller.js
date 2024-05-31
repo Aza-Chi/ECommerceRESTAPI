@@ -89,7 +89,7 @@ const processCheckout = async (req, res) => {
 
 const processPayment = (paymentInfo, totalPrice) => {
   // Simulate payment processing
-  // In a real application, you would integrate with a payment gateway
+  // In a real app, integrate with a payment gateway
   return { success: true };
 };
 

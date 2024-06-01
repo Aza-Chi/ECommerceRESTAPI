@@ -17,8 +17,8 @@ const controller = require('./controller');
 //   check('payment_method').exists().isString(), //payment is a placeholder for now 
 //   check('shipping_address').exists().isObject(),
 // ], controller.processCheckout);
-router.post('/checkout', controller.processCheckout);
-router.put('/checkout', controller.processCheckout);
+router.post('/', controller.processCheckout); //Don't need to add /checkout here, it's already covered by the base path set in server.js!!!
+router.put('/', controller.processCheckout);
 
 
 

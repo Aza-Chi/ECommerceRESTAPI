@@ -8,6 +8,7 @@ router.get('/customer/:customer_id', controller.getCartByCustomerId); //http://l
 
 
 router.delete('/:cart_id', controller.removeCart);
+//router.delete('/customer/:customer_id', controller.removeCartByCustomerId); //http://localhost:3000/api/v1/shoppingcart/customer/1
 
 // Post works
 router.post('/', [

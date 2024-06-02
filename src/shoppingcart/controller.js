@@ -68,6 +68,14 @@ const removeCart = (req, res) => {
     });
 };
 
+//////////
+   
+
+
+//////////
+
+
+
 const updateCartColumn = async (req, res) => { //CHANGE TO COALESCE?
     const { customer_id, product_id, quantity } = req.body;
 

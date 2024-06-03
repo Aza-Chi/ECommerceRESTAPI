@@ -3,6 +3,7 @@ const queriesOrders = require("../orders/queries");
 const queriesOrderDetails = require("../orderdetails/queries");
 const queriesShoppingCart = require("../shoppingcart/queries");
 const queriesProducts = require("../products/queries");
+const controllerProducts = require('../products/controller');
 
 const processCheckout = async (req, res) => {
   const client = await pool.connect(); // Create a client from the pool for transaction management! We can rollback a transaction if payment fails 
@@ -61,10 +62,16 @@ const processCheckout = async (req, res) => {
     // Add order details
     console.log("Adding order details");
     for (const item of cartItems) {
+      
+      const price = await controllerProducts.getProductPriceById(item.product_id); 
+      const subtotal = price * item.quantity;
       await client.query(queriesOrderDetails.addOrderDetails, [
-        order.order_id,
+        order.order_id, // Corrected?
         item.product_id,
-        item.quantity
+        item.quantity,
+        subtotal
+
+
       ]);
       // Update product stock
       console.log("Updating product stock quantity");

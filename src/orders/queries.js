@@ -1,8 +1,11 @@
 const getOrders = "SELECT * FROM orders";
 const getOrderById = "SELECT * FROM orders WHERE order_id = $1";
 const checkOrderExists = "SELECT i FROM orders i WHERE i.order_id = $1"; // i is the alias
-const addOrder =
-  "INSERT INTO orders (customer_id, total_amount, address_id, status_id) VALUES ($1, $2, $3, $4)";
+const addOrder = `
+  INSERT INTO orders (customer_id, total_amount, address_id, status_id)
+  VALUES ($1, $2, $3, $4)
+  RETURNING order_id;
+`;
 const removeOrder = "DELETE FROM orders WHERE order_id = $1";
 
 const generateUpdateQuery = (column) => {

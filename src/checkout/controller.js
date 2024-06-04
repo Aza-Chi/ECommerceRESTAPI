@@ -57,21 +57,35 @@ const processCheckout = async (req, res) => {
       address_id,
       0
     ]);
+
+    
+    console.log("Order Result:", orderResult.rows);
+
+    if (!orderResult.rows || orderResult.rows.length === 0) {
+      console.log("Failed to create order");
+      await client.query('ROLLBACK');
+      return res.status(500).json({ message: "Failed to create order" });
+    }
+
     const order = orderResult.rows[0];
 
-    // Add order details
+    if (!order || !order.order_id) {
+      console.log("Order ID is undefined");
+      await client.query('ROLLBACK');
+      return res.status(500).json({ message: "Failed to retrieve order ID" });
+    }
+
+    const order_id = order.order_id;
+
     console.log("Adding order details");
     for (const item of cartItems) {
-      
       const price = await controllerProducts.getProductPriceById(item.product_id); 
       const subtotal = price * item.quantity;
       await client.query(queriesOrderDetails.addOrderDetails, [
-        order.order_id, // Corrected?
+        order_id, // Correct order_id
         item.product_id,
         item.quantity,
         subtotal
-
-
       ]);
       // Update product stock
       console.log("Updating product stock quantity");
@@ -95,7 +109,7 @@ const processCheckout = async (req, res) => {
     }
 
     // Commit transaction
-    console.log("Commiting transaction");
+    console.log("Committing transaction");
     await client.query('COMMIT');
     console.log("Checkout successful");
     res.status(200).json({ message: "Checkout successful", order });

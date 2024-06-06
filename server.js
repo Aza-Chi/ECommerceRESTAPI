@@ -9,6 +9,13 @@ const orderDetailsRoutes = require("./src/orderdetails/routes");
 const shoppingCartRoutes = require("./src/shoppingcart/routes");
 const addressesRoutes = require("./src/addresses/routes");
 const checkoutRoutes = require("./src/checkout/routes");
+const jwt = require('jsonwebtoken');
+
+const { expressjwt: expressJwt } = require('express-jwt');
+const authRoutes = require('./src/auth/routes');
+require('dotenv').config();
+
+
 const app = express();
 const port = 3000;
 
@@ -77,6 +84,14 @@ app.use('/api/v1/shoppingcart', shoppingCartRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
 app.use('/api/v1/orderdetails', orderDetailsRoutes);
 app.use('/api/v1/checkout', checkoutRoutes);
+app.use('/api/v1/auth', authRoutes);
+
+const jwtMiddleware = expressJwt({
+    secret: process.env.JWT_SECRET,
+    algorithms: ['HS256'] //(HMAC with SHA-256) - commonly used algorithm for JWT signing 
+});
+
+app.use('/api/v1', jwtMiddleware);
 
 
 // Basic error handling middleware

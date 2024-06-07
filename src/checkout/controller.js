@@ -14,7 +14,8 @@ const processCheckout = async (req, res) => {
     
     // Extract info from request body
     console.log("Extracting Info from Req Body");
-    const { customer_id, address_id, paymentInfo } = req.body;
+    const { address_id, paymentInfo } = req.body;
+    const customer_id = req.user.id; // Get customer_id from the token
 
     // Fetch cart items for the user
     console.log("Fetching cart items");

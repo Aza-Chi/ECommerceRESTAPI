@@ -1,17 +1,17 @@
-const pool = require('../../db'); 
+const pool = require("../../db");
 const queriesOrders = require("../orders/queries");
 const queriesOrderDetails = require("../orderdetails/queries");
 const queriesShoppingCart = require("../shoppingcart/queries");
 const queriesProducts = require("../products/queries");
-const controllerProducts = require('../products/controller');
+const controllerProducts = require("../products/controller");
 
 const processCheckout = async (req, res) => {
-  const client = await pool.connect(); // Create a client from the pool for transaction management! We can rollback a transaction if payment fails 
+  const client = await pool.connect(); // Create a client from the pool for transaction management! We can rollback a transaction if payment fails
   try {
     // Begin transaction - transaction management - Using a client object in this way ensures that all operations between BEGIN and COMMIT/ROLLBACK are executed atomically
     console.log("Beginning Transaction");
-    await client.query('BEGIN');
-    
+    await client.query("BEGIN");
+
     // Extract info from request body
     console.log("Extracting Info from Req Body");
     const { address_id, paymentInfo } = req.body;
@@ -19,12 +19,15 @@ const processCheckout = async (req, res) => {
 
     // Fetch cart items for the user
     console.log("Fetching cart items");
-    const cartItemsResult = await client.query(queriesShoppingCart.getCartByCustomerId, [customer_id]);
+    const cartItemsResult = await client.query(
+      queriesShoppingCart.getCartByCustomerId,
+      [customer_id]
+    );
     const cartItems = cartItemsResult.rows;
 
     if (!cartItems || cartItems.length === 0) {
       console.log("Cart is empty");
-      await client.query('ROLLBACK'); // Rollback transaction if cart is empty
+      await client.query("ROLLBACK"); // Rollback transaction if cart is empty
       return res.status(400).json({ message: "Cart is empty" });
     }
 
@@ -32,14 +35,16 @@ const processCheckout = async (req, res) => {
     console.log("Calculating Total Price");
     let totalPrice = 0;
     for (const item of cartItems) {
-      const productResult = await client.query(queriesProducts.getProductById, [item.product_id]);
+      const productResult = await client.query(queriesProducts.getProductById, [
+        item.product_id,
+      ]);
       const product = productResult.rows[0];
       console.log("Validating Stock");
       if (product.stock_quantity < item.quantity) {
         console.log("Stock quantity is: " + product.stock_quantity);
         console.log("Item quantity is: " + item.quantity);
         console.log("Stock is insufficient!");
-        await client.query('ROLLBACK'); // Rollback transaction if stock is insufficient
+        await client.query("ROLLBACK"); // Rollback transaction if stock is insufficient
         return res.status(400).json({
           message: `Insufficient stock for product ${product.product_name}`,
         });
@@ -56,15 +61,14 @@ const processCheckout = async (req, res) => {
       customer_id,
       totalPrice,
       address_id,
-      0
+      0,
     ]);
 
-    
     console.log("Order Result:", orderResult.rows);
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
       console.log("Failed to create order");
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return res.status(500).json({ message: "Failed to create order" });
     }
 
@@ -72,7 +76,7 @@ const processCheckout = async (req, res) => {
 
     if (!order || !order.order_id) {
       console.log("Order ID is undefined");
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return res.status(500).json({ message: "Failed to retrieve order ID" });
     }
 
@@ -80,42 +84,46 @@ const processCheckout = async (req, res) => {
 
     console.log("Adding order details");
     for (const item of cartItems) {
-      const price = await controllerProducts.getProductPriceById(item.product_id); 
+      const price = await controllerProducts.getProductPriceById(
+        item.product_id
+      );
       const subtotal = price * item.quantity;
       await client.query(queriesOrderDetails.addOrderDetails, [
         order_id, // Correct order_id
         item.product_id,
         item.quantity,
-        subtotal
+        subtotal,
       ]);
       // Update product stock
       console.log("Updating product stock quantity");
       await client.query(queriesProducts.updateProductStockQuantity, [
         item.product.stock_quantity - item.quantity,
-        item.product_id
+        item.product_id,
       ]);
     }
 
     // Clear customer's cart
     console.log("Clearing customer cart");
-    await client.query(queriesShoppingCart.removeCartByCustomerId, [customer_id]);
+    await client.query(queriesShoppingCart.removeCartByCustomerId, [
+      customer_id,
+    ]);
 
     // Process payment (simplified)
     console.log("Processing payment");
     const paymentResult = processPayment(paymentInfo, totalPrice);
     if (!paymentResult.success) {
-      await client.query('ROLLBACK'); // Rollback transaction if payment fails
+      await client.query("ROLLBACK"); // Rollback transaction if payment fails
       console.log("Payment failed");
       return res.status(400).json({ message: "Payment failed" });
     }
 
     // Commit transaction
     console.log("Committing transaction");
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     console.log("Checkout successful");
     res.status(200).json({ message: "Checkout successful", order });
   } catch (error) {
-    await client.query('ROLLBACK'); // Rollback transaction on error
+    await client.query("ROLLBACK"); // Rollback transaction on error
     console.error("Checkout error:", error);
     console.log("We messed up!");
     res.status(500).json({ message: "Internal server error" });

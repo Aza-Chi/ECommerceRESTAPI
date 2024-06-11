@@ -4,19 +4,65 @@ const controller = require("./controller");
 const auth = require("../auth/auth");
 //const { check } = require('express-validator');
 
-//get/put/post route to process the checkout???
+/**
+ * @swagger
+ * tags:
+ *   name: Checkout
+ *   description: Checkout process management
+ */ /**
+ * @swagger
+ * /api/v1/checkout:
+ *   post:
+ *     summary: Process checkout
+ *     description: Process the checkout for the authenticated user, including creating an order, updating product stock, and clearing the customer's cart
+ *     tags: [Checkout]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - address_id
+ *               - paymentInfo
+ *             properties:
+ *               address_id:
+ *                 type: integer
+ *                 description: The ID of the address for the order
+ *               paymentInfo:
+ *                 type: object
+ *                 description: Information about the payment (e.g., payment method, card details)
+ *     responses:
+ *       200:
+ *         description: Checkout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Checkout successful
+ *                 order:
+ *                   type: object
+ *                   description: The details of the created order
+ *                   properties:
+ *                     order_id:
+ *                       type: integer
+ *                       description: The ID of the order
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 
-// Put this in orders??? //Or send json payload to the orders post route and order details post route???
-// POST - creating an order, creating order details (Still need to create order details!),
-//
-
-// router.post('/', [
-//   check('customer_id').exists().isInt(),
-//   check('items').isArray({ min: 1 }).withMessage('Items array cannot be empty'),
-//   check('payment_method').exists().isString(), //payment is a placeholder for now
-//   check('shipping_address').exists().isObject(),
-// ], controller.processCheckout);
 router.post("/", auth.authenticateToken, controller.processCheckout); //Don't need to add /checkout here, it's already covered by the base path set in server.js!!!
+
+// Don't actually need the put route, let's leave it here as a reminder for next time!!!
 router.put("/", auth.authenticateToken, controller.processCheckout);
 
 //

@@ -2,26 +2,33 @@ const pool = require("../../db");
 const queries = require("./queries");
 
 const getProducts = (req, res) => {
+  console.log('attempting to get Products!');
   pool.query(queries.getProducts, (error, results) => {
     if (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error('Error fetching products:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     } else {
+      //console.log('Products fetched successfully:', results.rows);
+      console.log('Products fetched successfully:');
       res.status(200).json(results.rows);
     }
   });
 };
 
+
 const getProductById = (req, res) => {
   const id = parseInt(req.params.product_id);
+  console.log(`getProductById called with ID: ${id}`);
   pool.query(queries.getProductById, [id], (error, results) => {
     if (error) {
-      console.error("Error fetching product by ID:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error('Error fetching product by ID:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     } else {
       if (results.rows.length === 0) {
-        res.status(404).json({ error: "Product not found" });
+        console.log(`Product not found for ID: ${id}`);
+        res.status(404).json({ error: 'Product not found' });
       } else {
+        console.log('Product fetched successfully:', results.rows);
         res.status(200).json(results.rows);
       }
     }

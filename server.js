@@ -2,6 +2,7 @@ const express = require("express");
 const setupSwagger = require("./swaggerConfig");
 const helmet = require("helmet");
 const csurf = require("csurf"); // CSRF Prevention!!
+const cors = require('cors'); // for securing cross-origin HTTP requests and enabling controlled interaction between web applications hosted on different domains.
 const cookieParser = require("cookie-parser");
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
@@ -11,6 +12,7 @@ const shoppingCartRoutes = require("./src/shoppingcart/routes");
 const addressesRoutes = require("./src/addresses/routes");
 const checkoutRoutes = require("./src/checkout/routes");
 const jwt = require("jsonwebtoken");
+
 
 const { expressjwt: expressJwt } = require("express-jwt");
 const authRoutes = require("./src/auth/routes");
@@ -30,6 +32,9 @@ const supabaseAPIKey= process.env.supabase_API_Key;
 
 const supabase = createClient(supabaseProjectUrl, supabaseAPIKey); */
 // SUPABASE TEST END
+
+//CORS 
+app.use(cors());
 
 // Use helmet middleware for security
 app.use(helmet());

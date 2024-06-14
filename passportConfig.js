@@ -87,6 +87,7 @@ passport.use(new FacebookStrategy({
     callbackURL: "http://localhost:3000/api/v1/auth/facebook/callback",
     profileFields: ['id', 'displayName', 'email', 'picture.type(large)'] // Specify the fields you want to retrieve
 }, (accessToken, refreshToken, profile, done) => {
+    console.log("Using Facebook Passport Strategy");
     console.log("Facebook profile:", profile);
 
     // Here, you can process the profile data as needed

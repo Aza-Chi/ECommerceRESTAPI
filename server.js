@@ -1,9 +1,13 @@
+require("dotenv").config();
 const express = require("express");
+const morgan = require('morgan');
 const setupSwagger = require("./swaggerConfig");
 const helmet = require("helmet");
 const csurf = require("csurf"); // CSRF Prevention!!
 const cors = require('cors'); // for securing cross-origin HTTP requests and enabling controlled interaction between web applications hosted on different domains.
 const cookieParser = require("cookie-parser");
+const session = require('express-session');
+const passport = require('./passportConfig');
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
 const orderRoutes = require("./src/orders/routes");
@@ -16,10 +20,24 @@ const jwt = require("jsonwebtoken");
 
 const { expressjwt: expressJwt } = require("express-jwt");
 const authRoutes = require("./src/auth/routes");
-require("dotenv").config();
+
 
 const app = express();
 const port = 3000;
+
+
+
+// Logging middleware
+app.use(morgan('dev'));
+
+app.use(session({
+  secret: 'process.env.SESSION_SECRET',
+  resave: false, ////we dont want to save a session if nothing is modified
+  saveUninitialized: false ////dont create a session until something is stored
+}));
+console.log(process.env.SESSION_SECRET);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //
 setupSwagger(app);
@@ -34,7 +52,14 @@ const supabase = createClient(supabaseProjectUrl, supabaseAPIKey); */
 // SUPABASE TEST END
 
 //CORS 
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:3001',
+  methods: ['GET', 'POST'],         // Allow these HTTP methods
+  allowedHeaders: ['Content-Type'], // Allow these headers
+};
+
+app.use(cors(corsOptions));
+
 
 // Use helmet middleware for security
 app.use(helmet());
@@ -49,7 +74,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply CSRF protection to all routes
-// app.use(csrfProtection); // TURN THIS BACK ON AFTER TESTING !!!!!!!
+ //app.use(csrfProtection); // TURN THIS BACK ON AFTER TESTING !!!!!!!
 
 // Set up a route to get the CSRF token
 app.get("/get-csrf-token", (req, res) => {

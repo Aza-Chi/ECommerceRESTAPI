@@ -96,7 +96,8 @@ router.post("/login", login);
  *         description: User logged out successfully
  */
 router.post("/logout", (req, res) => {
-  // optionally handle any server-side session cleanup
+  req.logout(); // Passport.js function to clear session data
+  console.log("req.logout() session data should be clear");
   // for JWT, the client needs to clear the token from its storage
   res.status(200).send("Logged out successfully");
 });
@@ -132,7 +133,7 @@ router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
       console.log("Google authentication successful, user:", req.user);
-      res.redirect('http://localhost:3001/');
+      res.redirect('http://localhost:3001/?loginSuccess=true');
   });
 
 router.get('/google/callback',
@@ -144,7 +145,7 @@ router.get('/google/callback',
     console.log("Authenticated user:", req.user);
 
     // Redirect to the frontend application
-    res.redirect('http://localhost:3001/');
+    res.redirect('http://localhost:3001/?loginSuccess=true');
 });
 
   /**
@@ -182,7 +183,7 @@ router.get('/facebook/callback',
     console.log("Authenticated user:", req.user);
 
     // Redirect to the frontend application
-    res.redirect('http://localhost:3001/');
+    res.redirect('http://localhost:3001/?loginSuccess=true');
   }
 );
 module.exports = router;

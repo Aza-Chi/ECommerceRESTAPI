@@ -1,7 +1,11 @@
 const express = require("express");
-const { register, login } = require("./auth");
-const passport = require('../../passportConfig');
+const { register, authenticateToken, login } = require("./auth");
+const passport = require("../../passportConfig");
+const bodyParser = require("body-parser");
+const pool = require("../../db"); 
+const jwt = require("jsonwebtoken");
 const router = express.Router();
+const jsonParser = bodyParser.json();
 
 /**
  * @swagger
@@ -83,7 +87,89 @@ router.post("/register", register);
  *       401:
  *         description: Unauthorized
  */
-router.post("/login", login);
+// router.post("/login", login); // OLD
+
+
+// LOGIN TRY 2
+// router.post('/login', function(req, res, next) {
+//     console.log(`auth/routes.js /login sessionId: ${req.sessionID}`);
+//     passport.authenticate('local', function(err, user, info) {
+//         if (err) { return next(err); }
+//         if (!user) { return res.redirect('/login'); }
+
+//     // NEED TO CALL req.login()!!!
+//         console.log(`auth/routes.js /login - calling req.login`); 
+//         req.login(user, next);
+//     })(req, res, next);
+// });
+    
+
+
+router.post(
+  "/login",
+  jsonParser,
+  passport.authenticate("local", { failureMessage: true }),
+  (req, res) => {
+
+    console.log("Creating token!");
+    const token = jwt.sign(
+      { username: req.user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    console.log("Token: " + { token });
+    req.user.token = token;
+    console.log(`auth/routes.js /login-req.user.token: ${req.user.token}`);
+    //console.log(`auth/routes.js /login sessionId: ${req.sessionID}`);
+    //console.log(`auth/routes.js /login-req.user: ${req.user}`); // object Object
+    console.log(`auth/routes.js /login-req.user STRINGIFIED: ${JSON.stringify(req.user)}`); // object stringified
+    //console.log(`auth/routes.js /login-req.user: ${req.user.id}`);
+    //console.log(`auth/routes.js /login-req.user: ${req.user.email}`);
+    //console.log(`auth/routes.js /login-req.user: ${req.user.username}`);
+    console.log(`auth/routes.js /login req.session: ${JSON.stringify(req.session)}`);
+    //console.log(`auth/routes.js /login req.session.passport.user: ${req.session.passport.user}`); // this gives a number at least 
+        // Set session data //Despite this, status still req.session is different.. interesting..
+        req.session.user = {
+
+      }; 
+      console.log("auth/routes.js /login printing req.session.user after set session data");
+      console.log(req.session.user); // empty 
+      //data has been set..  
+      req.session.user = { //saved in cookie, sess column under "user" but this data doesn't saved to the session it disappears!!! :/
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email,
+        email_address: req.user.email,
+        logged_in: true,
+        auth_method: "local",
+        session_id: req.sessionID,
+        isAuthenticated: true,
+        token: {token},
+        
+      }
+      console.log(`auth/routes.js /login - req.session.user: ${req.session.user}`); // after set gives an object
+      console.log(`auth/routes.js /login - req.session.user: ${JSON.stringify(req.session.user)}`); 
+ 
+    res.status(200).json({ // This doesn't set the data in client 
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      email_address: req.user.email,
+      logged_in: true,
+      auth_method: "local",
+      session_id: req.sessionID,
+      isAuthenticated: true,
+      token: token,
+    });
+    console.log(`auth/routes.js /login - calling res.end()`); 
+    res.end(); // important to update session
+    
+    req.session.passport.user.updatedfield= 'updatedvalue';
+    req.session.save(function(err) {console.log(err);});
+
+  }
+);
+// LOGIN END 
 
 /**
  * @swagger
@@ -102,6 +188,86 @@ router.post("/logout", (req, res) => {
   res.status(200).send("Logged out successfully");
 });
 
+// router.use((req, res, next) => {
+//   if(!req.session.userID)
+//     return res.status(403).send("not logged in");
+//  next();
+// });
+
+
+router.get("/status", authenticateToken, (req, res) => {
+  // If token is valid, req.user will contain the decoded JWT payload
+  // You can use req.user to access user information or perform additional actions
+  console.log(`auth/routes.js - /status verify token LOOK HERE 1232345435436456`);
+  console.log(req.user);
+  console.log(req.user.token);
+  console.log("auth/routes.js - /status - Authenticated");
+  jsonData = {
+          logged_in: true,
+          id: req.user.id,
+          email_address: req.user.email_address,
+          auth_method: req.user.auth_method,
+        };
+
+  res.status(200).json({ jsonData });
+});
+
+
+// router.get('/status', (req, res) => {
+//   console.log(`auth/routes.js - /status req.session.user: ${req.session.user}`); // undefined!! 
+//   console.log(`auth/routes.js - /status req.passport: ${req.passport}`); // undefined
+//   console.log(`auth/routes.js - /status req.passport: ${req.session.passport}`); // 
+//   console.log(`auth/routes.js - /status req.session: ${req.session}`); //object
+//   console.log(`auth/routes.js - /status stringified req.session: ${JSON.stringify(req.session)}`);// just tells me there's a cookie
+
+//   // console.log(`auth/routes.js - /status req.session.cookie: ${req.session.cookie}`); //gives object
+//   // console.log(`auth/routes.js - /status req.session.cookie: ${JSON.stringify(req.session.cookie)}`); //gives cookie data
+//   // console.log(`auth/routes.js - /status req.headers: ${req.headers}`); // object
+//   // console.log(`auth/routes.js - /status req.headers: ${JSON.stringify(req.headers)}`); // 
+//   // console.log(`auth/routes.js - /status req.params: ${req.params}`); // object
+//   // console.log(`auth/routes.js - /status req.params: ${JSON.stringify(req.params)}`); // object
+  
+//   //console.log(`auth/routes.js - /status req.username: ${req.username}`); // undefined
+//   //console.log(`auth/routes.js - /status req.signedcookies: ${req.signedCookies}`); // crash 
+//   // req.user nothing, req.session.user nothing for now,  req.passport nothing, 
+  
+//   //console.log(`auth/routes.js - /status req.passport: ${JSON.stringify(req)}`); 
+//   //console.log(`auth/routes.js - /status session: ${session}`); // this breaks the route
+//   //console.log(`auth/routes.js - Here is the req`);
+//   //console.log(req); //not helpful
+//   //  console.log(JSON.stringify(req));
+//   let jsonData;
+  
+//    const sessionId = req.sessionID; //Not helpful
+//    console.log(`auth/routes.js - /status sessionId: ${sessionId}`); // not helpful
+//   console.log("auth/routes.js /status - get status attempted");
+
+//   //req.session.user 
+//   if (!req.isAuthenticated()) {
+//     console.log(
+//       "auth/routes.js /status- req is not authenticated! Below is result of isAuthenticated()"
+//     );
+//     console.log(req.isAuthenticated()); // Returns false
+//     jsonData = {
+//       logged_in: false,
+//       id: null,
+//       email_address: null,
+//       auth_method: null,
+//     };
+//   } else {
+//     console.log("auth/routes.js - You have been authenticated!");
+//     jsonData = {
+//       logged_in: true,
+//       id: req.user.id,
+//       email_address: req.user.email_address,
+//       auth_method: req.user.auth_method,
+//     };
+//   }
+//   res.status(200).json(jsonData);
+//   console.log(jsonData);
+// });
+
+// /STATUS END 
 
 /**
  * @swagger
@@ -114,9 +280,10 @@ router.post("/logout", (req, res) => {
  *         description: Redirect to Google for authentication
  */
 
-
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 /**
  * @swagger
  * /api/v1/auth/google/callback:
@@ -129,15 +296,18 @@ router.get('/google',
  *       401:
  *         description: Unauthorized
  */
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-      console.log("Google authentication successful, user:", req.user);
-      res.redirect('http://localhost:3001/?loginSuccess=true');
-  });
+    console.log("Google authentication successful, user:", req.user);
+    res.redirect("http://localhost:3001/?loginSuccess=true");
+  }
+);
 
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     // Log request and user details
     console.log("Inside Google callback");
@@ -145,10 +315,11 @@ router.get('/google/callback',
     console.log("Authenticated user:", req.user);
 
     // Redirect to the frontend application
-    res.redirect('http://localhost:3001/?loginSuccess=true');
-});
+    res.redirect("http://localhost:3001/?loginSuccess=true");
+  }
+);
 
-  /**
+/**
  * @swagger
  * /api/v1/auth/facebook:
  *   get:
@@ -159,9 +330,10 @@ router.get('/google/callback',
  *         description: Redirect to Facebook for authentication
  */
 
-
-router.get('/facebook', // '/auth/facebook' DOES NOT WORK!!
-  passport.authenticate('facebook'));
+router.get(
+  "/facebook", // '/auth/facebook' DOES NOT WORK!!
+  passport.authenticate("facebook")
+);
 /**
  * @swagger
  * /api/v1/auth/facebook/callback:
@@ -175,15 +347,17 @@ router.get('/facebook', // '/auth/facebook' DOES NOT WORK!!
  *         description: Unauthorized
  */
 // Facebook Callback route
-router.get('/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/' }),
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/" }),
   (req, res) => {
     // Log request and user details
     console.log("Inside Facebook callback");
     console.log("Authenticated user:", req.user);
 
     // Redirect to the frontend application
-    res.redirect('http://localhost:3001/?loginSuccess=true');
+    res.redirect("http://localhost:3001/?loginSuccess=true");
   }
 );
+
 module.exports = router;

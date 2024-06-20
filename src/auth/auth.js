@@ -26,7 +26,7 @@ const register = async (req, res) => {
       email,
       phoneNumber,
     ]);
-    console.log("Successful Registration");
+    console.log("auth/auth.js - Register function -Successful Registration");
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -41,39 +41,61 @@ const register = async (req, res) => {
 
 
 
-// Token stuffs -  passport sessions not working!/session id keep changing no matter what
-// so let's do it this way for now!
-function authenticateToken(req, res, next) {
-  const token = req.headers.authorization;
+// Token stuffs -  
+// function authenticateToken(req, res, next) {
+//   const token = req.headers.authorization;
+
+//   if (!token) {
+//     console.log("No token provided, proceed with limited or public data");
+//     req.user = null;
+//     next();
+//     return;
+//   }
+// //Needed token.split(' ')[1] to get rid of Bearer prefix!!!!!!!!
+//   jwt.verify(token.split(' ')[1], process.env.JWT_SECRET, (err, user) => {
+//     if (err) {
+//       console.error("Token verification failed:", err);
+//       req.user = null;
+//       next();
+//       return;
+//     }
+//     console.log("Token is valid, attach user information to req.user");
+//     req.user = user;
+//     next();
+//   });
+// }
+
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.token;
 
   if (!token) {
-    console.log("No token provided, proceed with limited or public data");
-    req.user = null;
-    next();
-    return;
+    console.log("auth/auth.js - authenticateToken: No token provided !");
+    const jsonData = {
+      logged_in: false,
+      id: null,
+      email_address: null,
+      auth_method: null
+    };
+    res.json({ 
+      message: 'auth/auth.js - authenticateToken - No token! Working as intended!',
+      jsonData,
+   });
+    return res.status(401).send('auth/auth.js - authenticateToken: Access Denied - No Token!');
   }
-//Needed token.split(' ')[1] to get rid of Bearer prefix!!!!!!!!
-  jwt.verify(token.split(' ')[1], process.env.JWT_SECRET, (err, user) => {
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      console.error("Token verification failed:", err);
-      req.user = null;
-      next();
-      return;
+      return res.status(403).send('auth/auth.js - authenticateToken: Invalid Token');
     }
-    console.log("Token is valid, attach user information to req.user");
     req.user = user;
     next();
   });
-}
-
-module.exports = {
-  register,
-  authenticateToken,
-  //login, - it became a passport local strategy instead!
 };
 
 
-/* login without passport ! Reworking this to use passport!!
+// Token stuff END 
+
+//login without passport ! 
 const login = async (req, res) => {
   const { usernameOrEmail, password } = req.body;
   console.log("Server received the following data:");
@@ -100,31 +122,49 @@ const login = async (req, res) => {
     if (user && user.password) {
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (passwordMatch) {
-        console.log("Successful Login!");
+        console.log("auth/auth.js - login function - bcrypt compare: Password Matches!");
         const token = jwt.sign(
-          { username: user.username },
+          { id: user.id, email_address: user.email, auth_method: 'local', username: user.username },
           process.env.JWT_SECRET,
           { expiresIn: "1h" }
         );
         console.log("Token: ", token);
-        res.json({ token });
+        console.log(`auth/auth.js login function - res.cookie`);
+        console.log(res.cookie);
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+          sameSite: 'Strict' // Adjust sameSite attribute based on your needs
+        });
+
+
+        const jsonData = {
+          logged_in: true,
+          id: user.id,
+          email_address: user.email,
+          auth_method: 'local'
+        };
+
+        res.json({ 
+            message: 'auth/auth.js - login function - Login successful',
+            jsonData,
+         });
+        //res.json({ token }); // OLD 
       } else {
-        console.log("Failed to Login!");
+        console.log("auth/auth.js - login function - Failed to Login!");
         res.status(401).send("Invalid credentials");
       }
     } else {
-      console.log("Failed to Login!");
+      console.log("auth/auth.js - login function - Failed to Login!");
       res.status(401).send("Invalid credentials");
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).send("auth/auth.js - login function - Server error");
   }
 };
-*/
 
-/*
-//Moved to passportConfig.js
+
 // Parse user string
 function parseUser(userString) {
   if (!userString) return null; // userString is null or empty?
@@ -136,5 +176,45 @@ function parseUser(userString) {
     email: userData[5], // 5th column in table is email etc
   };
 }
+
+
+const logout = async (req, res) => {
+  // Clear the token cookie
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict'
+  });
+
+  const jsonData = {
+    logged_in: false,
+    id: null,
+    email_address: null,
+    auth_method: null,
+  };
+console.log(`auth/auth.js - logout function - Logout successful`);
+  res.json({ 
+    message: 'auth/auth.js - logout function - Logout successful',
+    jsonData,
+  });
+};
+
+/*
+
+*/
+
+module.exports = {
+  register,
+  authenticateToken,
+  login,
+  logout,
+};
+
+
+
+
+/*
+
+
 
 */

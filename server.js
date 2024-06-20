@@ -1,13 +1,14 @@
 require("dotenv").config();
 const express = require("express");
-const morgan = require('morgan');
+const morgan = require("morgan");
 const setupSwagger = require("./swaggerConfig");
 const helmet = require("helmet");
 const csurf = require("csurf"); // CSRF Prevention!!
-const cors = require('cors'); // for securing cross-origin HTTP requests and enabling controlled interaction between web applications hosted on different domains.
+const cors = require("cors"); // for securing cross-origin HTTP requests and enabling controlled interaction between web applications hosted on different domains.
 const cookieParser = require("cookie-parser");
-const session = require('express-session');
-const passport = require('./passportConfig');
+const session = require("express-session");
+const passport = require("./passportConfig");
+const bodyParser = require("body-parser");
 const customerRoutes = require("./src/customers/routes");
 const productRoutes = require("./src/products/routes");
 const orderRoutes = require("./src/orders/routes");
@@ -16,28 +17,44 @@ const shoppingCartRoutes = require("./src/shoppingcart/routes");
 const addressesRoutes = require("./src/addresses/routes");
 const checkoutRoutes = require("./src/checkout/routes");
 const jwt = require("jsonwebtoken");
-
-
+//const PgSession = require('connect-pg-simple')(session);
+//const pool = require("./db.js");
 const { expressjwt: expressJwt } = require("express-jwt");
 const authRoutes = require("./src/auth/routes");
 
-
 const app = express();
+app.use(bodyParser.json());
 const port = 3000;
 
-
-
 // Logging middleware
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
-app.use(session({
-  secret: 'process.env.SESSION_SECRET',
-  resave: false, ////we dont want to save a session if nothing is modified
-  saveUninitialized: false ////dont create a session until something is stored
-}));
-console.log(process.env.SESSION_SECRET);
+app.use(
+  session({
+    secret: "process.env.SESSION_SECRET",
+    resave: false, ////we dont want to save a session if nothing is modified
+    saveUninitialized: false, ////false - dont create a session until something is stored
+    cookie: {
+      domain: "localhost:3001",
+      secure: false, // true if https
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
+
+//console.log("server.js: session secret is: ");
+//console.log(process.env.SESSION_SECRET);
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.authenticate("session"));
+//app.use(passport.serializeUser);
+//app.use(passport.deserializeUser);
+// Add this middleware to log session data
+app.use((req, res, next) => {
+  //console.log('Session Data:', req.session);
+  //console.log('Session Data stringified:', JSON.stringify(req.session));
+  next();
+});
 
 //
 setupSwagger(app);
@@ -51,30 +68,32 @@ const supabaseAPIKey= process.env.supabase_API_Key;
 const supabase = createClient(supabaseProjectUrl, supabaseAPIKey); */
 // SUPABASE TEST END
 
-//CORS 
+//CORS
 const corsOptions = {
-  origin: 'http://localhost:3001',
-  methods: ['GET', 'POST'],         // Allow these HTTP methods
-  allowedHeaders: ['Content-Type'], // Allow these headers
+  origin: "http://localhost:3001",
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allow these HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow these heade  rs
+  credentials: true, // Allow credentials (cookies, etc.)
+  optionSuccessStatus: 200,
+  credentials: true,
 };
-
+// app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
-
 // Use helmet middleware for security
-app.use(helmet());
+// app.use(helmet());
 
 // Middleware to parse cookies
-app.use(cookieParser());
+app.use(cookieParser()); //app.use(cookieParser(process.env.SESSION_SECRET)); //cookieParser needs same secret as express-session
 
 // Enable CSRF protection
-const csrfProtection = csurf({ cookie: true });
+//const csrfProtection = csurf({ cookie: true });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply CSRF protection to all routes
- //app.use(csrfProtection); // TURN THIS BACK ON AFTER TESTING !!!!!!!
+//app.use(csrfProtection); // TURN THIS BACK ON AFTER TESTING !!!!!!!
 
 // Set up a route to get the CSRF token
 app.get("/get-csrf-token", (req, res) => {
@@ -112,6 +131,15 @@ app.post("/process", (req, res) => {
 });
 
 // Routes for APIs
+// testing
+app.get("/", (req, res) => {
+  res
+    .status(200)
+    .send(
+      req.isAuthenticated() ? `Logged in as ${req.user.email}.` : "Logged out."
+    );
+});
+//
 app.use("/api/v1/customers", customerRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/orders", orderRoutes);

@@ -189,8 +189,10 @@ router.post("/logout", logout);
 router.get("/status", authenticateToken, (req, res) => {
   // If token is valid, req.user will contain the decoded JWT payload
   // You can use req.user to access user information or perform additional actions
-  console.log(`auth/routes.js - /status authenticate token LOOK HERE 1232345435436456`);
-  console.log(`auth/routes.js - /status req.user.token`);
+  console.log(`auth/routes.js - /status attempted`);
+
+  console.log(`auth/routes.js req.cookies.token: ${req.cookies.token}`)
+  // console.log(`auth/routes.js - /status req.user.token`);
   //console.log(req.user.token); undefined 
   //console.log(`auth/routes.js - /status req.session:`);
 //  console.log(req.session);

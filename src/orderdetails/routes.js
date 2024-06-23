@@ -138,7 +138,7 @@ router.put(
  * @swagger
  * /api/v1/orderdetails/{order_detail_id}:
  *   delete:
- *     summary: Remove an order detail by ID
+ *     summary: Do not use this unless you're cleaning up the table, use delete order which will delete order details too - Remove an order detail by ID
  *     tags: [OrderDetails]
  *     parameters:
  *       - in: path

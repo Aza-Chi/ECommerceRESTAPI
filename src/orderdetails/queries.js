@@ -7,6 +7,9 @@ const addOrderDetails =
   "INSERT INTO orderdetails (order_id, product_id, quantity, subtotal) VALUES ($1, $2, $3, $4)";
 const removeOrderDetails =
   "DELETE FROM orderdetails WHERE order_detail_id = $1";
+  const removeOrderDetailsByOrderId =
+  "DELETE FROM orderdetails WHERE order_id = $1"; // This query is to be used with the remove order by order id function in orders
+  
 
 const generateUpdateQuery = (column) => {
   return `UPDATE orderdetails SET ${column} = $1 WHERE order_id = $2`;
@@ -20,5 +23,6 @@ module.exports = {
   checkOrderDetailsExist,
   addOrderDetails,
   removeOrderDetails,
+  removeOrderDetailsByOrderId,
   generateUpdateQuery,
 };

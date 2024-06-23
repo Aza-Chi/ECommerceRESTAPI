@@ -32,6 +32,7 @@ const getOrderDetailsById = (req, res) => {
   });
 };
 
+
 const addOrderDetails = async (req, res) => {
   // Use JS Destructuring to extract data from request body
   const { order_id, product_id, quantity } = req.body;

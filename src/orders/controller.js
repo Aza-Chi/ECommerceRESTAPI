@@ -1,5 +1,6 @@
 const pool = require("../../db");
 const queries = require("./queries");
+const queriesOrderDetails = require('../orderdetails/queries');
 
 const getOrders = (req, res) => {
   console.log("Fetching orders...");
@@ -29,6 +30,44 @@ const getOrderById = (req, res) => {
     }
   });
 };
+
+const getOrderByCustomerId = (req, res) => {
+  const customerId = parseInt(req.params.customer_id);
+  pool.query(
+    queries.getOrderByCustomerId,
+    [customerId],
+    (error, results) => {
+      if (error) {
+        console.error("Error fetching addresses for customer ID:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      } else {
+        res.status(200).json(results.rows);
+      }
+    }
+  );
+};
+
+const getOrderSummaryByOrderId = (req, res) => {
+  const id = parseInt(req.params.order_id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "Invalid order ID" });
+  }
+
+  pool.query(queries.getOrderSummaryByOrderId, [id], (error, results) => {
+    if (error) {
+      console.error("Error fetching order by ID:", error); 
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    if (results.rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json(results.rows);
+  });
+};
+
 
 const addOrder = async (req, res) => {
   // Use JS Destructuring to extract data from request body
@@ -68,6 +107,13 @@ const removeOrder = (req, res) => {
 
     // Remove the order
     pool.query(queries.removeOrder, [id], (error, results) => {
+      if (error) {
+        console.error("Error removing order:", error);
+        return res.status(500).send("Error removing order.");
+      }
+      res.status(200).send("Order Successfully Removed");
+    });
+    pool.query(queriesOrderDetails.removeOrderDetailsByOrderId, [id], (error, results) => {
       if (error) {
         console.error("Error removing order:", error);
         return res.status(500).send("Error removing order.");
@@ -127,6 +173,8 @@ const updateColumn = async (updateQuery, value, id) => {
 module.exports = {
   getOrders,
   getOrderById,
+  getOrderByCustomerId,
+  getOrderSummaryByOrderId,
   addOrder,
   removeOrder,
   updateOrderColumn,

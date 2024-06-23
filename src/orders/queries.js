@@ -1,5 +1,10 @@
 const getOrders = "SELECT * FROM orders";
 const getOrderById = "SELECT * FROM orders WHERE order_id = $1";
+const getOrderByCustomerId = "SELECT * FROM orders WHERE customer_id = $1";
+const getOrderSummaryByOrderId = `SELECT o.*, od.product_id, od.quantity, od.subtotal 
+                                  FROM orders o 
+                                  JOIN orderdetails od ON o.order_id = od.order_id 
+                                  WHERE o.order_id = $1`;
 const checkOrderExists = "SELECT i FROM orders i WHERE i.order_id = $1"; // i is the alias
 const addOrder = `
   INSERT INTO orders (customer_id, total_amount, address_id, status_id)
@@ -15,6 +20,8 @@ const generateUpdateQuery = (column) => {
 module.exports = {
   getOrders,
   getOrderById,
+  getOrderByCustomerId,
+  getOrderSummaryByOrderId,
   checkOrderExists,
   addOrder,
   removeOrder,

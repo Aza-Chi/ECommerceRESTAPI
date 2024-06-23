@@ -50,6 +50,106 @@ router.get("/:order_id", controller.getOrderById);
 
 /**
  * @swagger
+ * /api/v1/orders/customer/{customer_id}:
+ *   get:
+ *     summary: Retrieve orders by customer ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: customer_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the customer whose orders are to be retrieved
+ *     responses:
+ *       200:
+ *         description: A list of orders for the specified customer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   order_id:
+ *                     type: integer
+ *                     description: The order ID
+ *                   customer_id:
+ *                     type: integer
+ *                     description: The customer ID
+ *                   order_date:
+ *                     type: string
+ *                     format: date-time
+ *                     description: The date the order was placed
+ *                   total_amount:
+ *                     type: number
+ *                     format: float
+ *                     description: The total amount for the order
+ *       404:
+ *         description: No orders found for the customer
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/customer/:customer_id", controller.getOrderByCustomerId);
+
+/**
+ * @swagger
+ * /api/v1/orders/summary/{order_id}:
+ *   get:
+ *     summary: Retrieve an order summary by order ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: order_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the order to retrieve
+ *     responses:
+ *       200:
+ *         description: An order summary object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order_id:
+ *                   type: integer
+ *                   description: The order ID
+ *                 customer_id:
+ *                   type: integer
+ *                   description: The customer ID
+ *                 order_date:
+ *                   type: string
+ *                   format: date-time
+ *                   description: The date the order was placed
+ *                 total_amount:
+ *                   type: number
+ *                   format: float
+ *                   description: The total amount for the order
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       product_id:
+ *                         type: integer
+ *                         description: The product ID
+ *                       quantity:
+ *                         type: integer
+ *                         description: The quantity of the product
+ *                       subtotal:
+ *                         type: number
+ *                         format: float
+ *                         description: The subtotal for the product
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/summary/:order_id", controller.getOrderSummaryByOrderId);
+/**
+ * @swagger
  * /api/v1/orders/{order_id}:
  *   delete:
  *     summary: Remove an order by ID

@@ -191,7 +191,7 @@ router.get("/status", authenticateToken, (req, res) => {
   // You can use req.user to access user information or perform additional actions
   console.log(`auth/routes.js - /status attempted`);
 
-  console.log(`auth/routes.js req.cookies.token: ${req.cookies.token}`)
+  //console.log(`auth/routes.js req.cookies.token: ${req.cookies.token}`)
   // console.log(`auth/routes.js - /status req.user.token`);
   //console.log(req.user.token); undefined 
   //console.log(`auth/routes.js - /status req.session:`);

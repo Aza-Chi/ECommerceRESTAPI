@@ -38,7 +38,6 @@ const addOrderDetails = async (req, res) => {
   const { order_id, product_id, quantity } = req.body;
 
   try {
-    //Self explanatory stuff!
     const price = await controllerProducts.getProductPriceById(product_id);
     const subtotal = price * quantity;
     // Add the order details

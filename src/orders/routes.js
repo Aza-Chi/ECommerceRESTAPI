@@ -91,7 +91,51 @@ router.get("/:order_id", controller.getOrderById);
  *         description: Internal Server Error
  */
 router.get("/customer/:customer_id", controller.getOrderByCustomerId);
+/**
+ * @swagger
+ * /api/v1/orders/reference/{order_reference}:
+ *   get:
+ *     summary: Retrieve an order by order reference
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: order_reference
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The reference of the order to be retrieved
+ *     responses:
+ *       200:
+ *         description: The order with the specified reference
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order_id:
+ *                   type: integer
+ *                   description: The order ID
+ *                 customer_id:
+ *                   type: integer
+ *                   description: The customer ID
+ *                 order_date:
+ *                   type: string
+ *                   format: date-time
+ *                   description: The date the order was placed
+ *                 total_amount:
+ *                   type: number
+ *                   format: float
+ *                   description: The total amount for the order
+ *                 order_reference:
+ *                   type: string
+ *                   description: The reference of the order
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal Server Error
+ */
 
+router.get("/reference/:order_reference", controller.getOrderByOrderReference);
 /**
  * @swagger
  * /api/v1/orders/summary/{order_id}:

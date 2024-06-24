@@ -1,6 +1,7 @@
 const getOrders = "SELECT * FROM orders";
 const getOrderById = "SELECT * FROM orders WHERE order_id = $1";
 const getOrderByCustomerId = "SELECT * FROM orders WHERE customer_id = $1";
+const getOrderByOrderReference = "SELECT * FROM orders WHERE order_reference = $1";
 const getOrderSummaryByOrderId = `SELECT o.*, od.product_id, od.quantity, od.subtotal 
                                   FROM orders o 
                                   JOIN orderdetails od ON o.order_id = od.order_id 
@@ -21,6 +22,7 @@ module.exports = {
   getOrders,
   getOrderById,
   getOrderByCustomerId,
+  getOrderByOrderReference,
   getOrderSummaryByOrderId,
   checkOrderExists,
   addOrder,

@@ -31,6 +31,28 @@ const getOrderById = (req, res) => {
   });
 };
 
+const getOrderByOrderReference = (req, res) => {
+  const ref = req.params.order_reference;
+
+  if (typeof ref !== 'string' || ref.length !== 16) {
+    console.log(`orders/controller.js getOrderByOrderReference - "Invalid order reference format - numbers(4), letters(4), numbers(4), letters(4) "`);
+    return res.status(400).json({ error: "Invalid order reference format" });
+  }
+
+  pool.query(queries.getOrderByOrderReference, [ref], (error, results) => {
+    if (error) {
+      console.error("Error fetching order by reference:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    if (results.rows.length === 0) {
+      return res.status(204).json({ error: "Order not found" });
+    }
+
+    return res.status(200).json(results.rows);
+  });
+};
+
 const getOrderByCustomerId = (req, res) => {
   const customerId = parseInt(req.params.customer_id);
   pool.query(
@@ -174,6 +196,7 @@ module.exports = {
   getOrders,
   getOrderById,
   getOrderByCustomerId,
+  getOrderByOrderReference,
   getOrderSummaryByOrderId,
   addOrder,
   removeOrder,

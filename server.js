@@ -21,6 +21,7 @@ const jwt = require("jsonwebtoken");
 //const pool = require("./db.js");
 const { expressjwt: expressJwt } = require("express-jwt");
 const authRoutes = require("./src/auth/routes");
+// const registerRoute = require("./src/auth/routes");
 
 const app = express();
 app.use(bodyParser.json());
@@ -156,6 +157,7 @@ const jwtMiddleware = expressJwt({
 
 app.use("/api/v1", jwtMiddleware);
 
+// app.use("/api/v1/auth/register", registerRoute);
 // Basic error handling middleware
 app.use((err, req, res, next) => {
   if (err.code === "EBADCSRFTOKEN") {

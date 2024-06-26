@@ -25,7 +25,7 @@ const authRoutes = require("./src/auth/routes");
 
 const app = express();
 app.use(bodyParser.json());
-const port = 3000; //Need to change?
+const port = process.env.PORT;
 
 // Logging middleware
 app.use(morgan("dev"));

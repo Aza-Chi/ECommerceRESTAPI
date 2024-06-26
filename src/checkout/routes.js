@@ -65,6 +65,20 @@ router.post("/", auth.authenticateToken, controller.processCheckout); //Don't ne
 // Don't actually need the put route, let's leave it here as a reminder for next time!!!
 router.put("/", auth.authenticateToken, controller.processCheckout);
 
+
+/* STRIPE */
+
+router.post('/create-payment-session', auth.authenticateToken, controller.createPaymentSession); // needs order_id, address_id// customer_id is from token
+  
+router.get('/payment-session-status', controller.getPaymentSessionStatus);
+
+router.put('/confirm-paid-order', controller.confirmPaidOrder);
+  
+
+/* STRIPE END */
+
+
+
 //
 module.exports = router;
 

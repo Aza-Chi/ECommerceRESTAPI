@@ -93,8 +93,8 @@ const getOrderSummaryByOrderId = (req, res) => {
 
 const addOrder = async (req, res) => {
   // Use JS Destructuring to extract data from request body
-  const { customer_id, total_amount, address_id, status_id } = req.body;
-
+  const { customer_id, total_amount, address_id, status_id, order_reference } = req.body;
+console.log(`orders/controller.js attempting to add order with order_reference: ${order_reference}`);
   try {
     // Add the order
     await pool.query(queries.addOrder, [
@@ -102,6 +102,7 @@ const addOrder = async (req, res) => {
       total_amount,
       address_id,
       status_id,
+      order_reference,
     ]);
     console.log("Order added successfully!");
     return res.status(201).send("Order added successfully!");
@@ -191,6 +192,8 @@ const updateColumn = async (updateQuery, value, id) => {
     throw error;
   }
 };
+
+
 
 module.exports = {
   getOrders,

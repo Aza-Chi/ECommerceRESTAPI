@@ -25,18 +25,18 @@ const authRoutes = require("./src/auth/routes");
 
 const app = express();
 app.use(bodyParser.json());
-const port = 3000;
+const port = 3000; //Need to change?
 
 // Logging middleware
 app.use(morgan("dev"));
 
 app.use(
   session({
-    secret: "process.env.SESSION_SECRET",
+    secret: process.env.SESSION_SECRET,
     resave: false, ////we dont want to save a session if nothing is modified
     saveUninitialized: false, ////false - dont create a session until something is stored
     cookie: {
-      domain: "localhost:3001",
+      domain: process.env.REACT_APP_CLIENT_BASE_URL, 
       secure: false, // true if https
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
@@ -71,7 +71,7 @@ const supabase = createClient(supabaseProjectUrl, supabaseAPIKey); */
 
 //CORS
 const corsOptions = {
-  origin: "http://localhost:3001",
+  origin: process.env.REACT_APP_CLIENT_BASE_URL,
   methods: ["GET", "POST", "PUT", "DELETE"], // Allow these HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Allow these heade  rs
   credentials: true, // Allow credentials (cookies, etc.)

@@ -70,22 +70,21 @@ const authenticateToken = (req, res, next) => {
 
   if (!token) {
     console.log("auth/auth.js - authenticateToken: No token provided !");
-    const jsonData = {
-      logged_in: false,
-      id: null,
-      email_address: null,
-      auth_method: null
-    };
-    res.json({ 
+    return res.status(401).json({ 
       message: 'auth/auth.js - authenticateToken - No token! Working as intended!',
-      jsonData,
-   });
-    return res.status(401).send('auth/auth.js - authenticateToken: Access Denied - No Token!');
+      jsonData: {
+        logged_in: false,
+        id: null,
+        email_address: null,
+        auth_method: null
+      }
+    });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).send('auth/auth.js - authenticateToken: Invalid Token');
+      console.log("auth/auth.js - authenticateToken: Invalid token");
+      return res.status(403).json({ message: 'auth/auth.js - authenticateToken: Invalid Token' });
     }
     req.user = user;
     next();

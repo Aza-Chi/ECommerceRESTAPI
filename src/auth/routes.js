@@ -187,25 +187,20 @@ router.post("/logout", logout);
 
 
 router.get("/status", authenticateToken, (req, res) => {
-  // If token is valid, req.user will contain the decoded JWT payload
-  // You can use req.user to access user information or perform additional actions
-  console.log(`auth/routes.js - /status attempted`);
+  try {
+    // If authenticateToken is successful, req.user should contain user information
+    const jsonData = {
+      logged_in: true,
+      id: req.user.id,
+      email_address: req.user.email_address,
+      auth_method: req.user.auth_method,
+    };
 
-  //console.log(`auth/routes.js req.cookies.token: ${req.cookies.token}`)
-  // console.log(`auth/routes.js - /status req.user.token`);
-  //console.log(req.user.token); undefined 
-  //console.log(`auth/routes.js - /status req.session:`);
-//  console.log(req.session);
-  //console.log("auth/routes.js - /status - Authenticated");
-  
-  jsonData = {
-          logged_in: true,
-          id: req.user.id,
-          email_address: req.user.email_address,
-          auth_method: req.user.auth_method,
-        };
-
-  res.status(200).json({ jsonData });
+    res.status(200).json(jsonData); // Send JSON response with user data
+  } catch (error) {
+    console.error("Error in /status route:", error);
+    res.status(500).json({ message: "Internal Server Error" }); // Handle unexpected errors
+  }
 });
 
 

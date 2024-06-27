@@ -66,12 +66,13 @@ const register = async (req, res) => {
 // }
 
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  // Check for token in cookies or Authorization header
+  const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
   if (!token) {
-    console.log("auth/auth.js - authenticateToken: No token provided !");
-    return res.status(401).json({ 
-      message: 'auth/auth.js - authenticateToken - No token! Working as intended!',
+    console.error("auth/auth.js - authenticateToken: No token provided");
+    return res.status(401).json({
+      message: 'No token provided',
       jsonData: {
         logged_in: false,
         id: null,
@@ -81,16 +82,19 @@ const authenticateToken = (req, res, next) => {
     });
   }
 
+  // Verify the token
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      console.log("auth/auth.js - authenticateToken: Invalid token");
-      return res.status(403).json({ message: 'auth/auth.js - authenticateToken: Invalid Token' });
+      console.error("auth/auth.js - authenticateToken: Invalid token", err);
+      return res.status(403).json({ message: 'Invalid token' });
     }
+    // Token is valid, attach user information to request object
     req.user = user;
     next();
   });
 };
 
+module.exports = authenticateToken;
 
 // Token stuff END 
 

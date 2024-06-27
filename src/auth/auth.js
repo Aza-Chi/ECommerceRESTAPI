@@ -150,7 +150,8 @@ const login = async (req, res) => {
           logged_in: true,
           id: user.id,
           email_address: user.email,
-          auth_method: 'local'
+          auth_method: 'local',
+          token: token, //errors so sending it here for now 
         };
 
         res.json({ 

@@ -69,6 +69,11 @@ const authenticateToken = (req, res, next) => {
   // Check for token in cookies or Authorization header
   const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
+  console.log(`auth/auth.js - authenticateToken: Incoming request headers:`);
+  console.log(req.headers);
+  console.log(`auth/auth.js - authenticateToken: Extracted token:`);
+  console.log(token);
+
   if (!token) {
     console.error("auth/auth.js - authenticateToken: No token provided");
     return res.status(401).json({
@@ -90,11 +95,11 @@ const authenticateToken = (req, res, next) => {
     }
     // Token is valid, attach user information to request object
     req.user = user;
+    console.log(`auth/auth.js - authenticateToken: User information attached to request object:`);
+    console.log(req.user);
     next();
   });
 };
-
-module.exports = authenticateToken;
 
 // Token stuff END 
 

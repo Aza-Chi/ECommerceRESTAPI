@@ -170,7 +170,7 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(port, () =>
-  console.log(`I'm alive AHAHAHAHA! App listening on port ${port}`)
+  console.log(`I'm alive AHAHAHAHA! App listening on port ${port}, client base url is: ${process.env.REACT_APP_CLIENT_BASE_URL}`)
 );
 
 //module.exports = supabase; //supabase export use for backend routes!

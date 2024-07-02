@@ -133,7 +133,8 @@ const processCheckout = async (req, res) => {
     console.log("Releasing client");
     client.release(); // Release the client back to the pool
   }
-};
+};  // END CREATE CHECKOUT//////////////////////////////////////////
+
 
 const processPayment = (paymentInfo, totalPrice) => {
   // Simulate payment processing
@@ -155,12 +156,12 @@ const createPaymentSession = async (req, res) => {
     //1. get customerID
     // Extract info from request body
     console.log("Extracting Info from Req Body");
-    const { address_id, order_id } = req.body;
-    if (!address_id || !order_id) {
-      console.log("Missing address_id or order_id in the request body");
-      return res.status(400).json({ message: "Missing address_id or order_id" });
+    const { order_id } = req.body;
+    if (!order_id) {
+      console.log("Missing order_id in the request body");
+      return res.status(400).json({ message: "Missing order_id" });
     }
-    console.log(`checkout.js - createpaymentsession address_id: `, address_id);
+    // console.log(`checkout.js - createpaymentsession address_id: `, address_id);
     const customer_id = req.user.id; // Get customer_id from the token
     console.log(`checkout.js - createpaymentsession customer_id: `, customer_id);
     //2. Get cart data by customer ID - 
